@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     let products = [];
-    const cart = [];
+    let cart = [];
 
     const productlist = document.getElementById("product-list");
     const cartitems = document.getElementById("cart-items");
@@ -24,7 +24,19 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error fetching products:", error);
         }
     }
-
+   async function fetchCart() {
+    try{
+        const response=await fetch("/api/cart");
+        if(!response.ok){
+            throw new Error("Failed to fetch cart");
+        }
+        const data=await response.json();
+        cart=data;
+        renderCart();
+    } catch (error) {
+        console.error("Error fetching cart:", error);
+    }
+   }
     // Display products
     function renderProducts() {
         productlist.innerHTML = "";
@@ -59,9 +71,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Add product to cart
-    function addToCart(product) {
-        cart.push(product);
-        renderCart();
+    async function addToCart(product) {
+        try{
+            const response=await fetch("/api/cart",{
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({ id: product.id })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            }
+
+            const data = await response.json();
+            cart = data.cart;
+            renderCart();
+        } catch (error) {
+            console.error("Error adding product to cart:", error);
+        }
     }
 
     // Display cart
@@ -103,7 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Checkout successful!");
         renderCart();
     });
-
-    // Load products when page opens
-    fetchProducts();
+   async function init() {
+    await fetchProducts();
+    await fetchCart();
+   }
+   init();
 });
