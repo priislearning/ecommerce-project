@@ -1,10 +1,5 @@
 
 document.addEventListener('DOMContentLoaded',()=>{
-    const products=[
-        {id:1, name:"product 1", price:23.00 },
-        {id:2, name:"product 2", price:63.70 },
-        {id:3, name:"product 3", price:773.40 },
-    ];
     const cart=[];
     const productlist=document.getElementById("product-list");
     const cartitems=document.getElementById("cart-items");
