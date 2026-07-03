@@ -70,10 +70,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
     cartitems.addEventListener("click", (e) => {
-        if (e.target.tagName === "BUTTON") {
-            const productId = Number(e.target.dataset.id);
-            removeFromCart(productId);
-        }
+        const id=Number(e.target.dataset.id);
+        if (e.target.classList.contains("remove")) {
+    removeFromCart(id);
+}
+
+if (e.target.classList.contains("increase")) {
+    updateQuantity(id, "increase");
+}
+
+if (e.target.classList.contains("decrease")) {
+    updateQuantity(id, "decrease");
+}
     });
 
     // Add product to cart
@@ -98,6 +106,26 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Error adding product to cart:", error);
         }
+    }
+    async function updateQuantity(id, action){
+        try{
+            const response=await fetch(`/api/cart/${id}`,{
+                method:"PUT",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({ action })
+            });
+            const data=await response.json();
+            if(!response.ok){
+                throw new Error(data.message);
+            }
+              cart=data.cart;
+        renderCart();
+        } catch (error) {
+            console.error("Error updating cart item:", error);
+        }
+      
     }
     async function removeFromCart(productId) {
         try {
@@ -128,18 +156,30 @@ document.addEventListener("DOMContentLoaded", () => {
             carttotalmessage.classList.remove("hidden");
 
             cart.forEach(item => {
-                totalPrice += item.price;
+                totalPrice += item.price*item.quantity;
 
                 const cartitem = document.createElement("div");
 
                 cartitem.className = "text-white mb-2";
 
                 cartitem.innerHTML = `
-                    <span>${item.name} - $${item.price.toFixed(2)}</span>
-                    <button
-                    class="bg-red-500 px-2 py-1 rounded ml-2" data-id="${item.id}">
-                        Remove
-                    </button>
+                    <div class="flex justify-between items-center bg-zinc-800 p-2 rounded mb-2">
+
+    <div>
+        <p>${item.name}</p>
+        <p>Qty: ${item.quantity}</p>
+        <p>$${(item.price * item.quantity).toFixed(2)}</p>
+    </div>
+
+    <div class="space-x-2">
+        <button class="decrease bg-yellow-500 px-2 rounded" data-id="${item.id}">-</button>
+
+        <button class="increase bg-green-500 px-2 rounded" data-id="${item.id}">+</button>
+
+        <button class="remove bg-red-500 px-2 rounded" data-id="${item.id}">Remove</button>
+    </div>
+
+</div>
                 `;
 
                 cartitems.appendChild(cartitem);

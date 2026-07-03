@@ -10,19 +10,50 @@ app.get('/api/products',(req,res)=>{ // handles a get request
     res.json(products);
 });
 app.post("/api/cart",(req,res)=>{
-    const { id }=req.body;
-    const product=products.find(p=> p.id===id);
+    const { id }=req.body;//Express converts JSON into a JavaScript object.
+    const product=products.find(p=>p.id===id);
     if(!product){
         return res.status(404).json({
-            message:"product not found"
+            message:"Product not found"
         });
     }
-    cart.push(product);
+    const existingItem=cart.find(item=>item.id===id);
+    if(existingItem){
+          existingItem.quantity+=1;
+    }
+    else{
+        cart.push({
+            ...product,quantity:1
+        })
+    }
     res.status(201).json({
         message:"product added to cart",
         cart
+    })
     });
-})
+    app.put("/api/cart/:id",(req,res)=>{
+        const id=Number(req.params.id);
+        const item=cart.find(item=>item.id===id);
+        if(!item){
+            return res.status(404).json({
+                message:"Product not found in cart"
+            });
+        }
+        const {action}=req.body;
+        if(action==="increase"){
+            item.quantity++;
+        }
+        else if(action==="decrease"){
+            item.quantity--;
+            if(item.quantity<=0){
+                cart=cart.filter(i=>i.id!==id);
+            }
+        }
+        res.json({
+            message:"Cart updated",
+            cart
+        })
+    })
 app.delete("/api/cart/:id",(req,res)=>{
     const id=Number(req.params.id);
     cart=cart.filter(item=>item.id!==id);
