@@ -69,6 +69,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     });
+    cartitems.addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+            const productId = Number(e.target.dataset.id);
+            removeFromCart(productId);
+        }
+    });
 
     // Add product to cart
     async function addToCart(product) {
@@ -93,7 +99,24 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error adding product to cart:", error);
         }
     }
+    async function removeFromCart(productId) {
+        try {
+            const response = await fetch(`/api/cart/${productId}`, {
+                method: "DELETE"
+            });
 
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            }
+
+            const data = await response.json();
+            cart = data.cart;
+            renderCart();
+        } catch (error) {
+            console.error("Error removing product from cart:", error);
+        }
+    }
     // Display cart
     function renderCart() {
         cartitems.innerHTML = "";
@@ -112,7 +135,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 cartitem.className = "text-white mb-2";
 
                 cartitem.innerHTML = `
-                    ${item.name} - $${item.price.toFixed(2)}
+                    <span>${item.name} - $${item.price.toFixed(2)}</span>
+                    <button
+                    class="bg-red-500 px-2 py-1 rounded ml-2" data-id="${item.id}">
+                        Remove
+                    </button>
                 `;
 
                 cartitems.appendChild(cartitem);

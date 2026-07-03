@@ -3,7 +3,7 @@ const express=require('express');
 const path=require('path');
 const app=express();// create an express application
 app.use(express.json());
-const cart=[];
+let cart=[];
 app.use(express.static(path.join(__dirname,"client"))); // serve static files from public folder
 const port=3000;
 app.get('/api/products',(req,res)=>{ // handles a get request
@@ -23,6 +23,14 @@ app.post("/api/cart",(req,res)=>{
         cart
     });
 })
+app.delete("/api/cart/:id",(req,res)=>{
+    const id=Number(req.params.id);
+    cart=cart.filter(item=>item.id!==id);
+    res.json({
+        message:"product removed from cart",
+        cart
+    });
+});
 app.get("/api/cart",(req,res)=>{
     res.json(cart);
 })
