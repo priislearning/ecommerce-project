@@ -1,13 +1,21 @@
-const products=require("./data/products");;
+const Product=require("./models/Product.js");
+const products=require("./data/products.js");
 const express=require('express');
 const path=require('path');
+const connectDB=require("./db/connect.js");
 const app=express();// create an express application
 app.use(express.json());
 let cart=[];
 app.use(express.static(path.join(__dirname,"client"))); // serve static files from public folder
 const port=3000;
 app.get('/api/products',(req,res)=>{ // handles a get request
-    res.json(products);
+    try{
+        const products=await Product.find();
+        res.json(products);
+    }
+    catch(error){
+        res.status(500).json({message:"Server error"});
+    }
 });
 app.post("/api/cart",(req,res)=>{
     const { id }=req.body;//Express converts JSON into a JavaScript object.
@@ -65,6 +73,21 @@ app.delete("/api/cart/:id",(req,res)=>{
 app.get("/api/cart",(req,res)=>{
     res.json(cart);
 })
-app.listen(port,()=>{
-    console.log(`Server is running on http://localhost:${port}`);
-});
+async function seedProducts(){
+    const count=await Product.countDocuments();
+    if(count==0){
+        await Product.insertMany(products);
+        console.log("product inserted into MongoDB");
+    }
+    else{
+        console.log("products already exist in MongoDB")
+    }
+}
+async function start(){
+    await connectDB();
+    await seedProducts();
+    app.listen(port,()=>{
+        console.log(`server is running on port ${port}`);
+    });
+}
+start();
