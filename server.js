@@ -1,3 +1,7 @@
+require("dotenv").config();
+const authMiddleware=require("./middleware/authMiddleware.js");
+const jwt=require("jsonwebtoken");
+const authRoutes=require("./routes/authRoutes.js");
 const Product=require("./models/Product.js");
 const products=require("./data/products.js");
 const express=require('express');
@@ -8,7 +12,9 @@ app.use(express.json());
 let cart=[];
 app.use(express.static(path.join(__dirname,"client"))); // serve static files from public folder
 const port=3000;
-app.get('/api/products',(req,res)=>{ // handles a get request
+app.use('/api/auth', authRoutes); // Use the authentication routes
+ // Protect the products route
+app.get('/api/products',async(req,res)=>{ // handles a get request
     try{
         const products=await Product.find();
         res.json(products);
@@ -70,7 +76,7 @@ app.delete("/api/cart/:id",(req,res)=>{
         cart
     });
 });
-app.get("/api/cart",(req,res)=>{
+app.get("/api/cart",authMiddleware,(req,res)=>{
     res.json(cart);
 })
 async function seedProducts(){

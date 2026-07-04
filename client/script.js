@@ -26,7 +26,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
    async function fetchCart() {
     try{
-        const response=await fetch("/api/cart");
+        const token=localStorage.getItem("token");//tells the browser to take my token out
+        const response=await fetch("/api/cart",{
+            headers:{
+                "Authorization": `Bearer ${token}`//name of http header exaclty what middle ware read
+            }//take the header out put it inside the req send it to the server the complete journey login server crreate jwt browser save jwt user click cart browser take jwt from locak storage browser attach jwt in auth header server recive request middleware read auth header middleware verifies jwt royte ec
+        });
         if(!response.ok){
             throw new Error("Failed to fetch cart");
         }
@@ -45,14 +50,35 @@ document.addEventListener("DOMContentLoaded", () => {
             const productdiv = document.createElement("div");
 
             productdiv.className =
-                "bg-zinc-800 p-2 rounded flex justify-between items-center mb-3 text-white";
+                "glass rounded-2xl p-5 flex justify-between items-center shadow-lg";
 
             productdiv.innerHTML = `
-                <span>${product.name} - $${product.price.toFixed(2)}</span>
-                <button data-id="${product.id}" class="bg-blue-500 px-2 py-1 rounded">
-                    Add to Cart
-                </button>
-            `;
+
+<div>
+
+<h3 class="text-xl font-semibold">
+
+${product.name}
+
+</h3>
+
+<p class="text-green-400 mt-2">
+
+$${product.price.toFixed(2)}
+
+</p>
+
+</div>
+
+<button
+data-id="${product.id}"
+class="bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded-xl">
+
+Add To Cart
+
+</button>
+
+`;
 
             productlist.appendChild(productdiv);
         });
@@ -87,10 +113,12 @@ if (e.target.classList.contains("decrease")) {
     // Add product to cart
     async function addToCart(product) {
         try{
+            const token=localStorage.getItem("token");
             const response=await fetch("/api/cart",{
                 method:"POST",
                 headers:{
-                    "Content-Type":"application/json"
+                    "Content-Type":"application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body:JSON.stringify({ id: product.id })
             });
@@ -109,10 +137,12 @@ if (e.target.classList.contains("decrease")) {
     }
     async function updateQuantity(id, action){
         try{
+            const token=localStorage.getItem("token");
             const response=await fetch(`/api/cart/${id}`,{
                 method:"PUT",
                 headers:{
-                    "Content-Type":"application/json"
+                    "Content-Type":"application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body:JSON.stringify({ action })
             });
@@ -128,9 +158,13 @@ if (e.target.classList.contains("decrease")) {
       
     }
     async function removeFromCart(productId) {
+        const token = localStorage.getItem("token");
         try {
             const response = await fetch(`/api/cart/${productId}`, {
-                method: "DELETE"
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
             });
 
             if (!response.ok) {
@@ -163,7 +197,7 @@ if (e.target.classList.contains("decrease")) {
                 cartitem.className = "text-white mb-2";
 
                 cartitem.innerHTML = `
-                    <div class="flex justify-between items-center bg-zinc-800 p-2 rounded mb-2">
+                    <div class="glass rounded-xl p-4 flex justify-between items-center mb-4">
 
     <div>
         <p>${item.name}</p>
@@ -206,3 +240,6 @@ if (e.target.classList.contains("decrease")) {
    }
    init();
 });
+// your backend is the clg
+//jwt is the identity card
+//middleware is the security guard
