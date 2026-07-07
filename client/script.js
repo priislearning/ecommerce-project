@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             products = await response.json();
+            console.log(products);
             renderProducts();
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -71,7 +72,7 @@ $${product.price.toFixed(2)}
 </div>
 
 <button
-data-id="${product.id}"
+data-id="${product._id}"
 class="bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded-xl">
 
 Add To Cart
@@ -86,9 +87,10 @@ Add To Cart
 
     // Event delegation for Add to Cart buttons
     productlist.addEventListener("click", (e) => {
+         console.log("Button clicked", e.target);
         if (e.target.tagName === "BUTTON") {
-            const productId = Number(e.target.dataset.id);
-            const product = products.find(p => p.id === productId);
+            const productId =e.target.dataset.id;
+            const product = products.find(p => p._id === productId);
 
             if (product) {
                 addToCart(product);
@@ -96,7 +98,7 @@ Add To Cart
         }
     });
     cartitems.addEventListener("click", (e) => {
-        const id=Number(e.target.dataset.id);
+        const id=e.target.dataset.id;
         if (e.target.classList.contains("remove")) {
     removeFromCart(id);
 }
@@ -120,7 +122,7 @@ if (e.target.classList.contains("decrease")) {
                     "Content-Type":"application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body:JSON.stringify({ id: product.id })
+                body:JSON.stringify({ id: product._id })
             });
 
             if (!response.ok) {
@@ -206,11 +208,11 @@ if (e.target.classList.contains("decrease")) {
     </div>
 
     <div class="space-x-2">
-        <button class="decrease bg-yellow-500 px-2 rounded" data-id="${item.id}">-</button>
+        <button class="decrease bg-yellow-500 px-2 rounded" data-id="${item.productId}">-</button>
 
-        <button class="increase bg-green-500 px-2 rounded" data-id="${item.id}">+</button>
+        <button class="increase bg-green-500 px-2 rounded" data-id="${item.productId}">+</button>
 
-        <button class="remove bg-red-500 px-2 rounded" data-id="${item.id}">Remove</button>
+        <button class="remove bg-red-500 px-2 rounded" data-id="${item.productId}">Remove</button>
     </div>
 
 </div>

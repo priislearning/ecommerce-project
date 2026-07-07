@@ -1,84 +1,188 @@
 require("dotenv").config();
+const Cart=require("./models/Cart.js");
+const connectDB=require("./db/connect.js");
 const authMiddleware=require("./middleware/authMiddleware.js");
 const jwt=require("jsonwebtoken");
 const authRoutes=require("./routes/authRoutes.js");
 const Product=require("./models/Product.js");
-const products=require("./data/products.js");
 const express=require('express');
 const path=require('path');
-const connectDB=require("./db/connect.js");
+const {
+    connectRedis,
+    redisClient//we need this to get() and set() inside out api
+}=require("./db/redis.js");
 const app=express();// create an express application
 app.use(express.json());
-let cart=[];
+
 app.use(express.static(path.join(__dirname,"client"))); // serve static files from public folder
 const port=3000;
 app.use('/api/auth', authRoutes); // Use the authentication routes
  // Protect the products route
 app.get('/api/products',async(req,res)=>{ // handles a get request
     try{
-        const products=await Product.find();
+        const cachedProducts=await redisClient.get("products");//redis store data like key value
+        if(cachedProducts){
+            console.log("Cache Hit");
+            return res.json(JSON.parse(cachedProducts));//redis store string before sending it back we convert it into js object again
+        }
+        console.log("Cache miss");
+        const products=await Product.find();//if not in redis find in mongodb
+        await redisClient.set("products",JSON.stringify(products));//mongodb give object redis want string
         res.json(products);
     }
     catch(error){
         res.status(500).json({message:"Server error"});
     }
 });
-app.post("/api/cart",(req,res)=>{
-    const { id }=req.body;//Express converts JSON into a JavaScript object.
-    const product=products.find(p=>p.id===id);
+app.post("/api/cart",authMiddleware, async(req,res)=>{//browser post/api/cart auth jwt verified,route start
+    try{
+    const userId=req.user.userId;
+    const cartKey=`cart:${userId}`;//this becomes redis key
+    const { id:productId }=req.body;//express convert json to js object this is product id
+    const product = await Product.findById(productId)
     if(!product){
         return res.status(404).json({
             message:"Product not found"
         });
     }
-    const existingItem=cart.find(item=>item.id===id);
+    let cart=await Cart.findOne({user:userId});//this is mongodb
+    if(!cart){
+        cart=new Cart({
+            user:userId,
+            items:[]
+        });
+    }
+    const existingItem=cart.items.find(item=>item.productId.toString()===productId);
     if(existingItem){
-          existingItem.quantity+=1;
+        existingItem.quantity++;
+    }else{
+        cart.items.push({
+            productId:product._id,
+            name:product.name,
+            price:product.price,
+            quantity:1
+        });
     }
-    else{
-        cart.push({
-            ...product,quantity:1
-        })
-    }
+    await cart.save();//saved to mongodb before this evrrythig=ng was js object
+     await redisClient.del(cartKey);
+
     res.status(201).json({
-        message:"product added to cart",
-        cart
-    })
+        message: "Product added",
+        cart: cart.items
     });
-    app.put("/api/cart/:id",(req,res)=>{
-        const id=Number(req.params.id);
-        const item=cart.find(item=>item.id===id);
-        if(!item){
-            return res.status(404).json({
-                message:"Product not found in cart"
+}catch(err){
+    console.log(err);
+    res.status(500).json({
+        message:"Server Error"
+    });
+}
+    });//after this cart is no longer stored in node js its in redis
+app.put("/api/cart/:id",authMiddleware,async(req,res)=>{//when u click + on product brwo send put/api/cart/1
+        const userId=req.user.userId;
+        const cartKey=`cart:${userId}`;//this is rediskey
+        const id=req.params.id;
+        const{ action }=req.body;//find cart find item inc/dec save db delete redis cache return updated cart
+        try{
+            const cart=await Cart.findOne({
+                user:userId
+            });
+            if(!cart){
+                return res.status(404).json({
+                    message:"Cart not found"
+                });
+            }
+            const item=cart.items.find(
+                item=>item.productId.toString()===id
+            );
+            if(!item){
+                return res.status(404).json({
+                    message:"Product not found"
+                });
+            }
+            if(action==="increase"){
+                item.quantity++;
+            }
+            else if(action==="decrease"){
+                item.quantity--;
+                if(item.quantity<=0){
+                    cart.items=cart.items.filter(
+                        i=>i.productId.toString()!==id
+                    );
+                }
+            }
+            await cart.save();
+            //invalidate cache
+            await redisClient.del(cartKey);
+            res.json({
+                message:"Cart Updated",
+                cart:cart.items
             });
         }
-        const {action}=req.body;
-        if(action==="increase"){
-            item.quantity++;
+        catch(err){
+            res.status(500).json({
+                message:"server error"
+            });
         }
-        else if(action==="decrease"){
-            item.quantity--;
-            if(item.quantity<=0){
-                cart=cart.filter(i=>i.id!==id);
-            }
-        }
-        res.json({
-            message:"Cart updated",
-            cart
-        })
-    })
-app.delete("/api/cart/:id",(req,res)=>{
-    const id=Number(req.params.id);
-    cart=cart.filter(item=>item.id!==id);
-    res.json({
-        message:"product removed from cart",
-        cart
     });
+app.delete("/api/cart/:id",authMiddleware,async(req,res)=>{
+    const userId=req.user.userId;
+    const cartKey=`cart:${userId}`;
+    const id=req.params.id;
+    try{
+        const cart=await Cart.findOne({
+            user:userId
+        });
+        if(!cart){
+            return res.status(404).json({
+                message:"Cart not found"
+            });
+        }
+        cart.items=cart.items.filter(
+            item=>item.productId.toString()!==id
+        );
+        await cart.save();
+        //invalidate cache
+        await redisClient.del(cartKey);
+        res.json({
+            message:"Product removed",
+            cart:cart.items
+        });
+    }
+    catch(err){
+        res.status(500).json({
+            message:"Server Error"
+        });
+    }
 });
-app.get("/api/cart",authMiddleware,(req,res)=>{
-    res.json(cart);
-})
+app.get("/api/cart",authMiddleware,async(req,res)=>{//before reids browser getcart node ram cart
+    const userId=req.user.userId;//now broswer getcart jwtsuth user id redis hit return miss mongodb redis set return
+    const cartKey=`cart:${userId}`;
+    try{
+        //check redis
+        const cachedCart=await redisClient.get(cartKey);
+        if(cachedCart){
+            console.log("Cart Cache Hit");
+            return res.json(JSON.parse(cachedCart));
+        }
+        console.log("Cart Cache Miss");
+        //fetch from mongo db
+        const cart=await Cart.findOne({user:userId});
+        if(!cart){
+            return res.json([]);
+        }
+      //save to redis
+      await redisClient.set(
+        cartKey,
+        JSON.stringify(cart.items)
+      );
+      res.json(cart.items);
+    }
+    catch(err){
+        res.status(500).json({
+            message:"Server error"
+        });
+    }
+});
 async function seedProducts(){
     const count=await Product.countDocuments();
     if(count==0){
@@ -89,10 +193,11 @@ async function seedProducts(){
         console.log("products already exist in MongoDB")
     }
 }
-async function start(){
-    await connectDB();
-    await seedProducts();
-    app.listen(port,()=>{
+async function start(){//await tells js dont move to the next line until this operation finish
+    await connectDB();//start server connect mongo db wait.. mongodb connected
+    await connectRedis();//connect redis wait... redis connected
+    await seedProducts();//seed products start express server
+    app.listen(port,()=>{//server start listening on port 3000
         console.log(`server is running on port ${port}`);
     });
 }
