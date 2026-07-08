@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./config/env");
 const Cart=require("./models/Cart.js");
 const connectDB=require("./db/connect.js");
 const authMiddleware=require("./middleware/authMiddleware.js");
@@ -6,13 +7,17 @@ const jwt=require("jsonwebtoken");
 const authRoutes=require("./routes/authRoutes.js");
 const Product=require("./models/Product.js");
 const express=require('express');
+const helmet=require("helmet");
+const cors=require("cors");
 const path=require('path');
 const {
     connectRedis,
     redisClient//we need this to get() and set() inside out api
 }=require("./db/redis.js");
 const app=express();// create an express application
-app.use(express.json());
+app.use(helmet());//add security headers to response
+app.use(cors());
+app.use(express.json());//parse json from req
 
 app.use(express.static(path.join(__dirname,"client"))); // serve static files from public folder
 const port=3000;

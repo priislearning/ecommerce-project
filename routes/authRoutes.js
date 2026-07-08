@@ -6,7 +6,11 @@ const{
     getMe
 } = require('../controllers/authController');
 const authMiddleware=require("../middleware/authMiddleware");
-router.post("/register",registerUser);
+const { registerValidation } = require("../validators/authValidator");
+const validate = require("../middleware/validate");
+console.log(registerValidation);
+console.log(validate);
+router.post("/register",registerValidation,validate,registerUser);//middleware executes left to right order matter
 router.post("/login",loginUser);
 router.get("/me",authMiddleware,getMe); //someone req get/api/aith/me run authmiddle first it jwt is valid run getme send user detail
 module.exports=router;
