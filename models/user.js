@@ -12,6 +12,11 @@ const userSchema=new mongoose.Schema({
     password:{
         type:String,
         required:true
+    },
+    role:{
+        type:String,
+        enum:["customer","admin"],//bz mongodb allow everything allowed given values
+        default:"customer"
     }
 });
 const User=mongoose.model("User",userSchema);

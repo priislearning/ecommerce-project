@@ -56,7 +56,7 @@
 //Why use a library?
 
 //Instead of manually checking every variable:
-
+ 
 
 //if (!process.env.JWT_SECRET) { ... }
 
@@ -100,4 +100,52 @@ XSS Protection
 
 for a secure backend.
 Place it before your routes so every request is sanitized.
+ */
+
+/*
+XSS (Cross-Site Scripting)
+XSS happens when malicious JavaScript is stored or reflected and later executed in another user's browser.
+MongoDB stores the data; it does not execute JavaScript.
+The browser executes <script> tags when rendering unsafe HTML.
+xss-clean sanitizes user input before it reaches your controllers.
+XSS commonly affects features like reviews, comments, product descriptions, and user-generated content.
+xss-clean is one layer of defense. Safe frontend rendering (avoiding unsafe innerHTML with untrusted content) is also important.
+Before implementing, one important update
+*/ 
+
+/**
+ authentication-who r u-JWT verfies identity using jwt 
+ AUTHORIAzTION-WHAT are u allowed to do for admin or cline
+ role based authorixation verfies permission
+ 401-unauthorized-idk who u rno jwt invalid jwt expired jwt authentication failed
+ 
+ 403-forbidden ik who u r but u r not allowed to do this
+ 
+ flow->req-authentication-authorization controller
+ */
+
+ /**
+  dd a role field to the User schema.
+Store roles as strings (customer, admin) for readability.
+Use enum to restrict allowed values and prevent invalid roles.
+Set default: "customer" so every new user gets the least privileged role automatically.
+Never trust the client to choose privileged roles like admin; role assignment should be controlled by the backend.
+  */
+
+/**
+ Storing Role in JWT
+The JWT payload can contain both userId and role.
+This avoids an extra database query on every authorized request.
+The payload is signed, so users cannot modify their role without invalidating the signature.
+After jwt.verify(), req.user automatically contains both the user's identity and role.
+
+Storing the role inside the JWT avoids an additional database query on every request. After the JWT is verified, the server already has both the user's identity and role, reducing database load and improving response time, especially in high-traffic applications.
+
+JWTs are digitally signed using the server's secret key. If an attacker modifies the payload (for example, changing the role from customer to admin), the signature no longer matches. During jwt.verify(), verification fails and the server rejects the token.
+
+JWT payload should contain only the information needed for authorization and identification.
+Never store sensitive data like passwords or OTPs in a JWT because the payload is encoded, not encrypted.
+JWT_SECRET signs the token so attackers cannot modify its contents.
+Authorization will be implemented as a separate middleware, keeping authentication and authorization independent (Single Responsibility Principle).
+We'll use modern JavaScript features (...roles and higher-order functions) to make the middleware reusable across many routes.
  */
