@@ -11,6 +11,7 @@ const products = require("./data/products");
 const express=require('express');
 const helmet=require("helmet");
 const cors=require("cors");
+const orderRoutes = require("./routes/orderRoutes");
 const path=require('path');
 const {
     connectRedis,
@@ -27,6 +28,7 @@ app.use(express.static(path.join(__dirname,"client"))); // serve static files fr
 const port=3000;
 app.use('/api/auth', authRoutes); // Use the authentication routes
  // Protect the products route
+ app.use("/api/orders", orderRoutes);
 app.get('/api/products',async(req,res)=>{ // handles a get request
     try{
         const cachedProducts=await redisClient.get("products");//redis store data like key value

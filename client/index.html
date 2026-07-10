@@ -18,33 +18,49 @@
 
 <div class="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
 
-<h1 class="text-3xl font-bold tracking-tight">
+<a href="index.html"
+class="text-3xl font-bold tracking-tight">
+
  WatchStore
-</h1>
+
+</a>
 
 <div class="flex items-center gap-6">
 
 <input
+id="search-input"
 type="text"
 placeholder="Search Apple Watch..."
 class="border rounded-full px-5 py-2 w-72 focus:outline-none"
 />
 
-<a href="login.html" class="hover:text-gray-500">
-Login
+<a href="index.html" class="hover:text-gray-500">
+
+Products
+
 </a>
 
-<a
-href="register.html"
-class="hover:text-gray-500">
-Register
+<a href="orders.html" class="hover:text-gray-500">
+
+Orders
+
 </a>
 
 <a
 href="cart.html"
 class="bg-black text-white px-5 py-2 rounded-full">
+
 🛒 Cart
+
 </a>
+
+<button
+id="logout-btn"
+class="hover:text-red-500">
+
+Logout
+
+</button>
 
 </div>
 
@@ -92,7 +108,7 @@ class="grid lg:grid-cols-4 md:grid-cols-2 gap-8">
 
 </div>
 
-
+<script src="navbar.js"></script>
 <script src="script.js"></script>
 
 </body>
