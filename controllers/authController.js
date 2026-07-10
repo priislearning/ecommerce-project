@@ -54,7 +54,8 @@ try{
     }
 const token=jwt.sign(//creates an identity card
     {
-        userId:user._id//payload or information we want to include in the token
+        userId:user._id,//payload or information we want to include in the token
+        role:user.role
     },
     process.env.JWT_SECRET,{//like iur own company stamp that we use to sign the token and verify it later
         expiresIn:"1h"//this id expires in 1 hour
@@ -72,7 +73,7 @@ const token=jwt.sign(//creates an identity card
 };
 const getMe=async(req,res)=>{//when someone visit api/auth/me express will call getme
     try{
-        const user=await User.findById(req.user.id).select("-password");//send everything without password
+        const user=await User.findById(req.user.userId).select("-password");//send everything without password
         res.json(user);//express convert user into json browser recieve json so  it can display hii name) auto req.user.id already exixts when middleware uns to check jwt
     }
     catch(error){

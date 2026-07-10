@@ -45,45 +45,78 @@ document.addEventListener("DOMContentLoaded", () => {
    }
     // Display products
     function renderProducts() {
-        productlist.innerHTML = "";
+    productlist.innerHTML = "";
 
-        products.forEach(product => {
-            const productdiv = document.createElement("div");
+    products.forEach(product => {
 
-            productdiv.className =
-                "glass rounded-2xl p-5 flex justify-between items-center shadow-lg";
+        const productdiv = document.createElement("div");
 
-            productdiv.innerHTML = `
+        productdiv.className =
+            "bg-white rounded-3xl shadow-lg hover:shadow-2xl transition duration-300 p-6 flex flex-col";
 
-<div>
+        productdiv.innerHTML = `
+        
+        <div class="bg-[#f5f5f7] rounded-3xl h-80 flex items-center justify-center p-8">
 
-<h3 class="text-xl font-semibold">
+            <img
+                src="${product.image}"
+                alt="${product.name}"
+                class="max-h-full max-w-full h-64 object-contain"
+            >
 
-${product.name}
+        </div>
 
-</h3>
+        <h3 class="text-2xl font-semibold mt-6 text-gray-900">
 
-<p class="text-green-400 mt-2">
+            ${product.name}
 
-$${product.price.toFixed(2)}
+        </h3>
 
-</p>
+        <p class="text-gray-500 mt-1">
 
-</div>
+            ${product.brand}
 
-<button
-data-id="${product._id}"
-class="bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded-xl">
+        </p>
 
-Add To Cart
+        <div class="flex items-center mt-2">
 
-</button>
+            <span class="text-yellow-500 text-lg">
+                ★★★★★
+            </span>
 
-`;
+            <span class="ml-2 text-gray-500">
+                ${product.rating}
+            </span>
 
-            productlist.appendChild(productdiv);
-        });
-    }
+        </div>
+
+        <p class="text-3xl font-bold mt-4 text-black">
+
+            ₹${product.price.toLocaleString("en-IN")}
+
+        </p>
+
+        <span class="inline-block mt-3 bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm w-fit">
+
+            In Stock (${product.stock})
+
+        </span>
+
+        <button
+            data-id="${product._id}"
+            class="mt-6 bg-black hover:bg-gray-800 text-white rounded-full py-4 font-semibold transition">
+
+            Add to Cart
+
+        </button>
+
+        `;
+
+        productlist.appendChild(productdiv);
+
+    });
+}
+
 
     // Event delegation for Add to Cart buttons
     productlist.addEventListener("click", (e) => {
@@ -97,6 +130,7 @@ Add To Cart
             }
         }
     });
+    if(cartitems){
     cartitems.addEventListener("click", (e) => {
         const id=e.target.dataset.id;
         if (e.target.classList.contains("remove")) {
@@ -111,6 +145,7 @@ if (e.target.classList.contains("decrease")) {
     updateQuantity(id, "decrease");
 }
     });
+}
 
     // Add product to cart
     async function addToCart(product) {
@@ -231,11 +266,13 @@ if (e.target.classList.contains("decrease")) {
     }
 
     // Checkout
+    if(checkoutbtn){
     checkoutbtn.addEventListener("click", () => {
         cart.length = 0;
         alert("Checkout successful!");
         renderCart();
     });
+    }
    async function init() {
     await fetchProducts();
     await fetchCart();

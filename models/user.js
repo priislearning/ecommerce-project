@@ -16,7 +16,7 @@ const userSchema=new mongoose.Schema({
     role:{
         type:String,
         enum:["customer","admin"],//bz mongodb allow everything allowed given values
-        default:"customer"
+        default:"customer"//so nobody can register as admin
     }
 });
 const User=mongoose.model("User",userSchema);

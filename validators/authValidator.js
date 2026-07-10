@@ -24,6 +24,7 @@ const loginValidation=[
     .withMessage("Invalid email"),
 
     body("password")
+    .trim()
     .notEmpty()
     .withMessage("Password is required")
 ];

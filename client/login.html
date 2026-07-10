@@ -1,43 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopSphere | Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        body{
-            background: linear-gradient(-45deg,#0f172a,#1e1b4b,#111827,#312e81);
-            background-size:400% 400%;
-            animation:bg 12s ease infinite;
-        }
-
-        @keyframes bg{
-            0%{background-position:0% 50%;}
-            50%{background-position:100% 50%;}
-            100%{background-position:0% 50%;}
-        }
-
-        .glass{
-            backdrop-filter:blur(18px);
-            background:rgba(255,255,255,.08);
-            border:1px solid rgba(255,255,255,.12);
-        }
-    </style>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="min-h-screen flex justify-center items-center">
+<body class="bg-[#f5f5f7]">
 
-<div class="glass w-[400px] p-10 rounded-3xl shadow-2xl">
+<div class="min-h-screen grid lg:grid-cols-2">
 
-<h1 class="text-4xl font-bold text-white text-center">
-🛒 ShopSphere
+<div class="hidden lg:flex items-center justify-center bg-white">
+
+<img
+src="/images/1.jpg"
+class="w-[500px] object-contain"
+>
+
+</div>
+
+<div class="flex items-center justify-center">
+
+<div class="bg-white shadow-xl rounded-3xl p-10 w-[430px]">
+
+<h1 class="text-4xl font-bold">
+Welcome Back
 </h1>
 
-<p class="text-center text-gray-300 mt-2 mb-8">
-Welcome back! Continue shopping.
+<p class="text-gray-500 mt-2 mb-8">
+Sign in to your account
 </p>
 
 <form id="login-form" class="space-y-5">
@@ -45,38 +38,39 @@ Welcome back! Continue shopping.
 <input
 id="email"
 type="email"
-placeholder="📧 Email"
+placeholder="Email"
 required
-class="w-full rounded-xl p-4 bg-gray-900/70 text-white border border-gray-700 focus:border-blue-500 outline-none"
+class="w-full border rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-black"
 />
 
 <input
 id="password"
 type="password"
-placeholder="🔒 Password"
+placeholder="Password"
 required
-class="w-full rounded-xl p-4 bg-gray-900/70 text-white border border-gray-700 focus:border-blue-500 outline-none"
+class="w-full border rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-black"
 />
 
 <button
-class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 transition rounded-xl p-4 text-white font-semibold">
-Login →
+class="w-full bg-black text-white py-4 rounded-2xl hover:bg-gray-800 transition">
+Login
 </button>
 
 </form>
 
-<p class="text-center text-gray-300 mt-7">
+<p class="text-center mt-8">
 
 Don't have an account?
 
-<a href="register.html"
-class="text-blue-400 hover:text-blue-300">
-
+<a href="register.html" class="font-semibold">
 Register
-
 </a>
 
 </p>
+
+</div>
+
+</div>
 
 </div>
 

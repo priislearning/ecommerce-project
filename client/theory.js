@@ -149,3 +149,7 @@ JWT_SECRET signs the token so attackers cannot modify its contents.
 Authorization will be implemented as a separate middleware, keeping authentication and authorization independent (Single Responsibility Principle).
 We'll use modern JavaScript features (...roles and higher-order functions) to make the middleware reusable across many routes.
  */
+
+/**
+ "A valid JWT only proves the user's identity. It does not determine what actions the user is allowed to perform. After authentication, the backend must also check the user's role or permissions before allowing access to protected resources."
+ */

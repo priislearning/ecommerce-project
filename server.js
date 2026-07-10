@@ -1,11 +1,13 @@
 require("dotenv").config();
-require("./config/env");
+require("./config/env.js");
 const Cart=require("./models/Cart.js");
 const connectDB=require("./db/connect.js");
+const mongoSanitize = require("express-mongo-sanitize");
 const authMiddleware=require("./middleware/authMiddleware.js");
 const jwt=require("jsonwebtoken");
 const authRoutes=require("./routes/authRoutes.js");
-const Product=require("./models/Product.js");
+const Product=require("./models/product.js");
+const products = require("./data/products");
 const express=require('express');
 const helmet=require("helmet");
 const cors=require("cors");
@@ -15,10 +17,12 @@ const {
     redisClient//we need this to get() and set() inside out api
 }=require("./db/redis.js");
 const app=express();// create an express application
-app.use(helmet());//add security headers to response
+app.use(helmet({
+    contentSecurityPolicy: false
+}));//add security headers to response
 app.use(cors());
 app.use(express.json());//parse json from req
-
+//nosql injection anything begg with $ is sus it remove it all dang operator start with $ it also sanitize .
 app.use(express.static(path.join(__dirname,"client"))); // serve static files from public folder
 const port=3000;
 app.use('/api/auth', authRoutes); // Use the authentication routes
