@@ -3,12 +3,27 @@ document.addEventListener("DOMContentLoaded", () => {
     let cart = [];
 
     const productlist = document.getElementById("product-list");
+    const searchInput=document.getElementById("search");
     const cartitems = document.getElementById("cart-items");
     const emptycarmessage = document.getElementById("empty-cart");
     const carttotalmessage = document.getElementById("cart-total");
     const totalpricedisplay = document.getElementById("total-price");
     const checkoutbtn = document.getElementById("checkout-btn");
+     
 
+    searchInput.addEventListener("input", () => {
+       const searchText = searchInput.value.toLowerCase();
+
+    const filteredProducts = products.filter(product => {
+
+        return product.name.toLowerCase().includes(searchText);
+
+    });
+
+    renderProducts(filteredProducts);
+
+
+});
     // Fetch products from backend
     async function fetchProducts() {
         try {
@@ -20,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             products = await response.json();
             console.log(products);
-            renderProducts();
+            renderProducts(products);
         } catch (error) {
             console.error("Error fetching products:", error);
         }
@@ -44,10 +59,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
    }
     // Display products
-    function renderProducts() {
+    function renderProducts(productsToRender) {
     productlist.innerHTML = "";
 
-    products.forEach(product => {
+    productsToRender.forEach(product => {
 
         const productdiv = document.createElement("div");
 
@@ -109,6 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Add to Cart
 
         </button>
+
 
         `;
 
@@ -275,8 +291,11 @@ if (e.target.classList.contains("decrease")) {
     }
    async function init() {
     await fetchProducts();
-    await fetchCart();
-   }
+
+    if (cartitems) {
+        await fetchCart();
+    }
+}
    init();
 });
 // your backend is the clg
