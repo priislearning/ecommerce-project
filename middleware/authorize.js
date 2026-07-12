@@ -1,6 +1,12 @@
 const authorize = (...roles) => {//...roles uses JavaScript's rest parameter to collect all passed roles into an array. This allows the same middleware to authorize multiple roles (e.g., admin, manager, seller) without rewriting the logic, making it flexible and reusable.
     return (req, res, next) => {//return the actual express middleware
 
+        if (!req.user) {
+    return res.status(401).json({
+        message: "Authentication required"
+    });
+}
+
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({//suppose role have admin and manager so for a customer we have 403 meaning authenticated but not allowed
                 message: "Access Denied"

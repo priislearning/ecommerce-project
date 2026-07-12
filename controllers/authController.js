@@ -39,14 +39,14 @@ const registerUser = async (req, res) => {//why async bz mongo db take time to r
 const loginUser = async (req, res) => {
 try{
     const {email,password}=req.body;
-    const user=await User.findOne({email});//search for user in database with the given email
+    const user=await User.findOne({email});//search for user in database with the given email in mongoose model
     if(!user){
         return res.status(400).json({
             message:"Invalid email or password"
         });
     }
     // Here you would typically compare the provided password with the hashed password stored in the database
-    const isMatch=await bcrypt.compare(password,user.password);
+    const isMatch=await bcrypt.compare(password,user.password);//why await bz searching monfodb takes
     if(!isMatch){
         return res.status(400).json({
             message:"Invalid email or password"

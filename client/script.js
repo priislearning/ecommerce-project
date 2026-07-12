@@ -3,7 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let cart = [];
 
     const productlist = document.getElementById("product-list");
+    const sortSelect = document.getElementById("sort");
     const searchInput=document.getElementById("search");
+    const cartCount = document.getElementById("cart-count");
     const cartitems = document.getElementById("cart-items");
     const emptycarmessage = document.getElementById("empty-cart");
     const carttotalmessage = document.getElementById("cart-total");
@@ -22,6 +24,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderProducts(filteredProducts);
 
+
+});
+sortSelect.addEventListener("change", () => {
+ 
+ if (sortSelect.value === "default") {
+        renderProducts(products);
+        return;
+    }
+
+const sortedProducts = [...products];//to make change to a new copy of duplicate array
+
+    if (sortSelect.value === "low-high") {
+
+        sortedProducts.sort((a, b) => a.price - b.price);
+
+    }
+
+    else if (sortSelect.value === "high-low") {
+
+        sortedProducts.sort((a, b) => b.price - a.price);
+
+    }
+
+    else if (sortSelect.value === "rating") {
+
+        sortedProducts.sort((a, b) => b.rating - a.rating);
+
+    }
+
+    renderProducts(sortedProducts);
 
 });
     // Fetch products from backend
@@ -54,83 +86,120 @@ document.addEventListener("DOMContentLoaded", () => {
         const data=await response.json();
         cart=data;
         renderCart();
+        updateCartCount();
     } catch (error) {
         console.error("Error fetching cart:", error);
     }
    }
-    // Display products
-    function renderProducts(productsToRender) {
+ // Display products
+function renderProducts(productsToRender) {
+
     productlist.innerHTML = "";
 
+    // If no products match the search
+    if (productsToRender.length === 0) {
+
+        productlist.innerHTML = `
+            <div class="col-span-full text-center py-20">
+
+                <h2 class="text-3xl font-bold">
+                    😕 No Products Found
+                </h2>
+
+                <p class="text-gray-500 mt-4">
+                    Try another search.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+    // Display all products
     productsToRender.forEach(product => {
 
         const productdiv = document.createElement("div");
 
         productdiv.className =
-            "bg-white rounded-3xl shadow-lg hover:shadow-2xl transition duration-300 p-6 flex flex-col";
+            "bg-white rounded-3xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition duration-300 p-6 flex flex-col";
 
         productdiv.innerHTML = `
-        
-        <div class="bg-[#f5f5f7] rounded-3xl h-80 flex items-center justify-center p-8">
 
-            <img
-                src="${product.image}"
-                alt="${product.name}"
-                class="max-h-full max-w-full h-64 object-contain"
-            >
+            <div class="bg-[#f5f5f7] rounded-3xl h-80 flex items-center justify-center p-8">
 
-        </div>
+                <img
+                    src="${product.image}"
+                    alt="${product.name}"
+                    class="max-h-full max-w-full h-64 object-contain"
+                >
 
-        <h3 class="text-2xl font-semibold mt-6 text-gray-900">
+            </div>
 
-            ${product.name}
+            <h3 class="text-2xl font-semibold mt-6 text-gray-900">
 
-        </h3>
+                ${product.name}
 
-        <p class="text-gray-500 mt-1">
+            </h3>
 
-            ${product.brand}
+            <p class="text-gray-500 mt-1">
 
-        </p>
+                ${product.brand}
 
-        <div class="flex items-center mt-2">
+            </p>
 
-            <span class="text-yellow-500 text-lg">
-                ★★★★★
+            <div class="flex items-center mt-2">
+
+                <span class="text-yellow-500 text-lg">
+                    ★★★★★
+                </span>
+
+                <span class="ml-2 text-gray-500">
+                    ${product.rating}
+                </span>
+
+            </div>
+
+            <p class="text-3xl font-bold mt-4 text-black">
+
+                ₹${product.price.toLocaleString("en-IN")}
+
+            </p>
+
+            <span class="inline-block mt-3 bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm w-fit">
+
+                In Stock (${product.stock})
+
             </span>
 
-            <span class="ml-2 text-gray-500">
-                ${product.rating}
-            </span>
+            <button
+                data-id="${product._id}"
+                class="mt-6 bg-black hover:bg-gray-800 text-white rounded-full py-4 font-semibold transition">
 
-        </div>
+                Add to Cart
 
-        <p class="text-3xl font-bold mt-4 text-black">
-
-            ₹${product.price.toLocaleString("en-IN")}
-
-        </p>
-
-        <span class="inline-block mt-3 bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm w-fit">
-
-            In Stock (${product.stock})
-
-        </span>
-
-        <button
-            data-id="${product._id}"
-            class="mt-6 bg-black hover:bg-gray-800 text-white rounded-full py-4 font-semibold transition">
-
-            Add to Cart
-
-        </button>
-
+            </button>
 
         `;
+
+         productdiv.addEventListener("click", (e) => {
+ 
+  console.log("Card clicked");
+    console.log("Target:", e.target);
+
+       if (e.target.closest("button")) {
+           console.log("Button detected");
+        return;
+    }
+  console.log("Going to product page");
+    window.location.href = `product.html?id=${product._id}`;
+
+});
 
         productlist.appendChild(productdiv);
 
     });
+
 }
 
 
@@ -138,6 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
     productlist.addEventListener("click", (e) => {
          console.log("Button clicked", e.target);
         if (e.target.tagName === "BUTTON") {
+             e.stopPropagation();
             const productId =e.target.dataset.id;
             const product = products.find(p => p._id === productId);
 
@@ -184,6 +254,8 @@ if (e.target.classList.contains("decrease")) {
             const data = await response.json();
             cart = data.cart;
             renderCart();
+            updateCartCount();
+            showToast("Product added to cart");
         } catch (error) {
             console.error("Error adding product to cart:", error);
         }
@@ -205,6 +277,7 @@ if (e.target.classList.contains("decrease")) {
             }
               cart=data.cart;
         renderCart();
+        updateCartCount();
         } catch (error) {
             console.error("Error updating cart item:", error);
         }
@@ -228,64 +301,92 @@ if (e.target.classList.contains("decrease")) {
             const data = await response.json();
             cart = data.cart;
             renderCart();
+            updateCartCount();
+            showToast("Item removed");
         } catch (error) {
             console.error("Error removing product from cart:", error);
         }
     }
-    // Display cart
-    function renderCart() {
-        cartitems.innerHTML = "";
 
-        let totalPrice = 0;
+    function updateCartCount() {
 
-        if (cart.length > 0) {
-            emptycarmessage.classList.add("hidden");
-            carttotalmessage.classList.remove("hidden");
+    if (!cartCount) return;
 
-            cart.forEach(item => {
-                totalPrice += item.price*item.quantity;
+    let totalItems = 0;
 
-                const cartitem = document.createElement("div");
+    cart.forEach(item => {
+        totalItems += item.quantity;
+    });
 
-                cartitem.className = "text-white mb-2";
-
-                cartitem.innerHTML = `
-                    <div class="glass rounded-xl p-4 flex justify-between items-center mb-4">
-
-    <div>
-        <p>${item.name}</p>
-        <p>Qty: ${item.quantity}</p>
-        <p>$${(item.price * item.quantity).toFixed(2)}</p>
-    </div>
-
-    <div class="space-x-2">
-        <button class="decrease bg-yellow-500 px-2 rounded" data-id="${item.productId}">-</button>
-
-        <button class="increase bg-green-500 px-2 rounded" data-id="${item.productId}">+</button>
-
-        <button class="remove bg-red-500 px-2 rounded" data-id="${item.productId}">Remove</button>
-    </div>
-
-</div>
-                `;
-
-                cartitems.appendChild(cartitem);
-            });
-
-            totalpricedisplay.textContent = totalPrice.toFixed(2);
-
-        } else {
-            emptycarmessage.classList.remove("hidden");
-            carttotalmessage.classList.add("hidden");
-            totalpricedisplay.textContent = "0.00";
-        }
+     if (totalItems === 0) {
+        cartCount.textContent = "";
+    } else {
+        cartCount.textContent = `(${totalItems})`;
     }
+
+}
+    // Display cart
+   function renderCart() {
+
+    if (!cartitems) return;
+
+    cartitems.innerHTML = "";
+
+    let totalPrice = 0;
+
+    if (cart.length > 0) {
+
+        emptycarmessage.classList.add("hidden");
+        carttotalmessage.classList.remove("hidden");
+
+        cart.forEach(item => {
+
+            totalPrice += item.price * item.quantity;
+
+            const cartitem = document.createElement("div");
+
+            cartitem.className = "text-white mb-2";
+
+            cartitem.innerHTML = `
+                <div class="glass rounded-xl p-4 flex justify-between items-center mb-4">
+
+                    <div>
+                        <p>${item.name}</p>
+                        <p>Qty: ${item.quantity}</p>
+                        <p>₹${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+
+                    <div class="space-x-2">
+                        <button class="decrease bg-yellow-500 px-2 rounded" data-id="${item.productId}">-</button>
+
+                        <button class="increase bg-green-500 px-2 rounded" data-id="${item.productId}">+</button>
+
+                        <button class="remove bg-red-500 px-2 rounded" data-id="${item.productId}">Remove</button>
+                    </div>
+
+                </div>
+            `;
+
+            cartitems.appendChild(cartitem);
+
+        });
+
+        totalpricedisplay.textContent = totalPrice.toFixed(2);
+
+    } else {
+
+        emptycarmessage.classList.remove("hidden");
+        carttotalmessage.classList.add("hidden");
+        totalpricedisplay.textContent = "0.00";
+
+    }
+}
 
     // Checkout
     if(checkoutbtn){
     checkoutbtn.addEventListener("click", () => {
         cart.length = 0;
-        alert("Checkout successful!");
+        showToast("Checkout successful!");
         renderCart();
     });
     }
