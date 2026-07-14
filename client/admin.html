@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <h2>Admin Dashboard</h2>
+
+        <button id="logoutBtn">Logout</button>
+    </nav>
+
+    <main>
+
+        <div class="header">
+
+            <h1>Products</h1>
+
+            <button id="addProductBtn">
+                + Add Product
+            </button>
+
+        </div>
+
+        <h2>Add Product</h2>
+
+<form id="addProductForm">
+
+    <input
+        type="text"
+        id="name"
+        placeholder="Product Name"
+        required
+    >
+
+    <input
+        type="text"
+        id="brand"
+        placeholder="Brand"
+        required
+    >
+
+    <input
+        type="text"
+        id="category"
+        placeholder="Category"
+        required
+    >
+
+    <input
+        type="number"
+        id="price"
+        placeholder="Price"
+        required
+    >
+
+    <input
+        type="number"
+        id="stock"
+        placeholder="Stock"
+        required
+    >
+
+    <input
+        type="text"
+        id="image"
+        placeholder="Image URL"
+        required
+    >
+
+    <textarea
+        id="description"
+        placeholder="Description">
+    </textarea>
+
+    <button id="submitBtn" type="submit">
+        Add Product
+    </button>
+
+</form>
+
+        <table border="1" width="100%">
+
+            <thead>
+
+                <tr>
+
+                    <th>Name</th>
+                    <th>Brand</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="productsBody">
+
+            </tbody>
+
+        </table>
+
+       
+    </main>
+
+    <script src="admin.js"></script>
+
+</body>
+</html>

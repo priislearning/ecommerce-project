@@ -45,7 +45,11 @@ document.addEventListener("DOMContentLoaded", async () => {//waits until html ha
                 }
                 localStorage.setItem("token",data.token);
                 alert("Login successful");
-                window.location.href="/index.html";
+                if (data.role === "admin") {
+    window.location.href = "/admin.html";
+} else {
+    window.location.href = "/index.html";
+}
             } catch (error) {
                 alert(error.message);
             }

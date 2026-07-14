@@ -63,7 +63,8 @@ const token=jwt.sign(//creates an identity card
 );
     res.status(200).json({
         message:"Login successful",
-        token
+        token,
+        role: user.role
     });
 } catch(error){
     res.status(500).json({

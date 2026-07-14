@@ -153,3 +153,17 @@ We'll use modern JavaScript features (...roles and higher-order functions) to ma
 /**
  "A valid JWT only proves the user's identity. It does not determine what actions the user is allowed to perform. After authentication, the backend must also check the user's role or permissions before allowing access to protected resources."
  */
+
+ /**
+  This is called using the client-side state.
+
+Instead of repeatedly asking the server for the same data, the frontend temporarily stores it in memory and reuses it.
+
+This reduces:
+
+Network requests
+Backend load
+Response time
+
+while keeping the UI responsive.
+  */

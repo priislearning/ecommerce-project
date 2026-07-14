@@ -6,7 +6,9 @@ const authorize = require("../middleware/authorize");
 const {
     getProducts,
     getProductById,
-    createProduct
+    createProduct,
+    updateProduct,
+    deleteProduct
 } = require("../controllers/productController");
 router.post(
     "/",
@@ -17,5 +19,10 @@ router.post(
 router.get("/", getProducts);
 
 router.get("/:id", getProductById);
-
+router.delete(
+    "/:id",
+    authMiddleware,
+    authorize("admin"),
+    deleteProduct
+);
 module.exports = router;
