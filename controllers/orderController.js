@@ -1,6 +1,82 @@
 const { redisClient } = require("../db/redis");
 const Cart = require("../models/Cart");
 const Order = require("../models/Order");
+const getAllOrders = async (req, res) => {
+
+    try {
+
+        const orders = await Order.find()
+            .populate("user", "name email")
+            .sort({ createdAt: -1 });
+        console.log(orders);
+        res.json(orders);
+
+    } catch (err) {
+
+        res.status(500).json({
+            message: err.message
+        });
+
+    }
+
+};
+const updateOrderStatus = async (req, res) => {
+try {
+
+        const { status } = req.body;
+
+        const allowedStatuses = [
+            "Pending",
+            "Shipped",
+            "Delivered"
+        ];
+
+        if (!allowedStatuses.includes(status)) {
+
+            return res.status(400).json({
+                message: "Invalid status"
+            });
+
+        }
+
+        const order = await Order.findByIdAndUpdate(
+
+            req.params.id,
+
+            {
+                status
+            },
+
+            {
+                new: true
+            }
+
+        );
+
+        if (!order) {
+
+            return res.status(404).json({
+                message: "Order not found"
+            });
+
+        }
+
+        res.json({
+
+            message: "Order status updated",
+
+            order
+
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            message: err.message
+        });
+
+    }
+}
 
 const placeOrder = async (req, res) => {
 
@@ -107,5 +183,7 @@ const getMyOrders = async (req, res) => {
 
 module.exports = {
     placeOrder,
-    getMyOrders
+    getMyOrders,
+    getAllOrders,
+    updateOrderStatus
 };

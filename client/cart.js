@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
-
+document
+    .getElementById("placeOrderBtn")
+    .addEventListener("click", placeOrder);
     const token = localStorage.getItem("token");
 
     const cartItems = document.getElementById("cart-items");
@@ -50,3 +52,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     totalPrice.textContent = total;
 
 });
+
+
+async function placeOrder() {
+
+    const token = localStorage.getItem("token");
+
+    try {
+
+        const response = await fetch("/api/orders", {
+
+            method: "POST",
+
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        alert(data.message);
+
+        window.location.reload();
+
+    } catch (err) {
+
+        alert(err.message);
+
+    }
+
+}

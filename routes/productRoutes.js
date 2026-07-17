@@ -17,7 +17,12 @@ router.post(
     createProduct
 );
 router.get("/", getProducts);
-
+router.put(
+    "/:id",
+    authMiddleware,
+    authorize("admin"),
+    updateProduct
+);
 router.get("/:id", getProductById);
 router.delete(
     "/:id",

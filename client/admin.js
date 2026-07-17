@@ -51,7 +51,7 @@ async function checkAdmin() {
             return;
         }
           await fetchProducts();
-
+          await fetchOrders();
 
     } catch (err) {
 
@@ -87,8 +87,8 @@ async function saveProduct(e) {
 
     try {
 
-        const response = await fetch("/api/products", {
-            method: "POST",
+        const response = await fetch(url, {
+            method,
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
@@ -201,6 +201,139 @@ async function deleteProduct(id) {
     }
 
 }
+
+async function fetchOrders() {
+  const token = localStorage.getItem("token");
+
+    try {
+
+        const response = await fetch("/api/orders/admin", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const orders = await response.json();
+
+        renderOrders(orders);
+
+    } catch (err) {
+
+        alert(err.message);
+
+    }
+
+}
+
+function renderOrders(orders) {
+
+const tbody = document.getElementById("ordersBody");
+
+    tbody.innerHTML = "";
+     
+if (orders.length === 0) {
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="4">No Orders Found</td>
+        </tr>
+    `;
+
+    return;
+
+}
+
+    orders.forEach(order => {
+
+        tbody.innerHTML += `
+            <tr>
+
+                <td>${order.user.name}</td>
+
+                <td>${order.user.email}</td>
+
+                <td>₹${order.total}</td>
+
+                <td>${order.items.length}</td>
+
+                <td>${order.status}</td>
+
+<td>
+
+    <select onchange="updateStatus('${order._id}', this.value)">
+
+        <option value="Pending"
+            ${order.status === "Pending" ? "selected" : ""}>
+            Pending
+        </option>
+
+        <option value="Shipped"
+            ${order.status === "Shipped" ? "selected" : ""}>
+            Shipped
+        </option>
+
+        <option value="Delivered"
+            ${order.status === "Delivered" ? "selected" : ""}>
+            Delivered
+        </option>
+
+    </select>
+
+</td>
+
+            </tr>
+        `;
+
+    });
+
+
+}
+
+async function updateStatus(id, status) {
+
+    const token = localStorage.getItem("token");
+
+    try {
+
+        
+        const response = await fetch(`/api/orders/${id}/status`, {
+
+            method: "PUT",
+
+            headers: {
+
+                "Content-Type": "application/json",
+
+                Authorization: `Bearer ${token}`
+
+            },
+
+            body: JSON.stringify({
+                status
+            })
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(data.message);
+
+        }
+
+        alert(data.message);
+
+        await fetchOrders();
+
+    } catch (err) {
+
+        alert(err.message);
+
+    }
+
+}
+
 const form = document.getElementById("addProductForm");
 
 form.addEventListener("submit", saveProduct);
