@@ -99,33 +99,51 @@ const deleteProduct = async (req, res) => {
 };
 const getProducts = async (req, res) => {
 
+
+    const page = Number(req.query.page) || 1;//browser sent get/api/products there is no ?page so req.query.page is undefined then number(undefined) is nan and nan||1 is page 1
+
+    const limit = Number(req.query.limit) || 3;
+    const skip = (page - 1) * limit;
     try {
 
-        const cachedProducts = await redisClient.get("products");
+      // const cachedProducts = await redisClient.get("products");
 
-        if (cachedProducts) {
+       // if (cachedProducts) {
 
-            console.log("Cache Hit");
+         //   console.log("Cache Hit");
 
-            return res.json(JSON.parse(cachedProducts));
+          //  return res.json(JSON.parse(cachedProducts));
 
-        }
+      //  }
 
         console.log("Cache Miss");
 
-        const products = await Product.find();
+        const totalProducts = await Product.countDocuments();
+        const totalPages = Math.ceil(totalProducts / limit);
+        const products = await Product.find()
+            .skip(skip)
+            .limit(limit);
 
-        await redisClient.set(
-            "products",
-            JSON.stringify(products)
-        );
 
-        res.json(products);
+       // await redisClient.set(
+        //    "products",
+        //    JSON.stringify(products)
+        //);
+
+        res.json({
+            products,
+
+            currentPage: page,
+
+            totalPages,
+
+            totalProducts
+        });
 
     } catch (error) {
 
-        res.status(500).json({
-            message: "Server error"
+       res.status(500).json({
+           message: "Server error"
         });
 
     }

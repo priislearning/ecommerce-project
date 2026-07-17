@@ -167,3 +167,47 @@ Response time
 
 while keeping the UI responsive.
   */
+
+/**
+ Interviewer:
+
+"How would you handle 1 million products?"
+
+You won't answer:
+
+"I'd return all of them."
+
+You'll answer:
+
+"I'd implement server-side pagination using MongoDB's skip() and limit(). The frontend requests one page at a time."
+
+That's exactly what we're going to build.
+ */
+
+/**
+ * server side pagination
+ Click Next
+      │
+      ▼
+currentPage++
+      │
+      ▼
+fetchProducts()
+      │
+      ▼
+GET /api/products?page=2&limit=3
+      │
+      ▼
+Express
+      │
+      ▼
+MongoDB
+.skip(3)
+.limit(3)
+      │
+      ▼
+Returns Products 4–6
+      │
+      ▼
+renderProducts()
+ */

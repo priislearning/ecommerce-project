@@ -4,102 +4,125 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const productlist = document.getElementById("product-list");
     const sortSelect = document.getElementById("sort");
-    const searchInput=document.getElementById("search");
+    const searchInput = document.getElementById("search");
     const cartCount = document.getElementById("cart-count");
     const cartitems = document.getElementById("cart-items");
     const emptycarmessage = document.getElementById("empty-cart");
     const carttotalmessage = document.getElementById("cart-total");
     const totalpricedisplay = document.getElementById("total-price");
     const checkoutbtn = document.getElementById("checkout-btn");
-     
+  
+     let currentPage = 1;
+    let totalPages = 1;
+    const limit = 3;
 
     searchInput.addEventListener("input", () => {
-       const searchText = searchInput.value.toLowerCase();
+        const searchText = searchInput.value.toLowerCase();
 
-    const filteredProducts = products.filter(product => {
+        const filteredProducts = products.filter(product => {
 
-        return product.name.toLowerCase().includes(searchText);
+            return product.name.toLowerCase().includes(searchText);
+
+        });
+
+        renderProducts(filteredProducts);
+
+
+    });
+    sortSelect.addEventListener("change", () => {
+
+        if (sortSelect.value === "default") {
+            renderProducts(products);
+            return;
+        }
+
+        const sortedProducts = [...products];//to make change to a new copy of duplicate array
+
+        if (sortSelect.value === "low-high") {
+
+            sortedProducts.sort((a, b) => a.price - b.price);
+
+        }
+
+        else if (sortSelect.value === "high-low") {
+
+            sortedProducts.sort((a, b) => b.price - a.price);
+
+        }
+
+        else if (sortSelect.value === "rating") {
+
+            sortedProducts.sort((a, b) => b.rating - a.rating);
+
+        }
+
+        renderProducts(sortedProducts);
 
     });
 
-    renderProducts(filteredProducts);
+   
 
-
-});
-sortSelect.addEventListener("change", () => {
- 
- if (sortSelect.value === "default") {
-        renderProducts(products);
-        return;
-    }
-
-const sortedProducts = [...products];//to make change to a new copy of duplicate array
-
-    if (sortSelect.value === "low-high") {
-
-        sortedProducts.sort((a, b) => a.price - b.price);
-
-    }
-
-    else if (sortSelect.value === "high-low") {
-
-        sortedProducts.sort((a, b) => b.price - a.price);
-
-    }
-
-    else if (sortSelect.value === "rating") {
-
-        sortedProducts.sort((a, b) => b.rating - a.rating);
-
-    }
-
-    renderProducts(sortedProducts);
-
-});
     // Fetch products from backend
     async function fetchProducts() {
         try {
-            const response = await fetch("/api/products");
+            const response = await fetch(`/api/products?page=${currentPage}&limit=${limit}`);
 
             if (!response.ok) {
                 throw new Error("Failed to fetch products");
             }
 
-            products = await response.json();
-            console.log(products);
-            renderProducts(products);
+            const data = await response.json();
+            currentPage = data.currentPage;
+            totalPages = data.totalPages;
+
+            renderProducts(data.products);
+              updatePagination();
         } catch (error) {
             console.error("Error fetching products:", error);
         }
     }
-   async function fetchCart() {
-    try{
-        const token=localStorage.getItem("token");//tells the browser to take my token out
-        const response=await fetch("/api/cart",{
-            headers:{
-                "Authorization": `Bearer ${token}`//name of http header exaclty what middle ware read
-            }//take the header out put it inside the req send it to the server the complete journey login server crreate jwt browser save jwt user click cart browser take jwt from locak storage browser attach jwt in auth header server recive request middleware read auth header middleware verifies jwt royte ec
-        });
-        if(!response.ok){
-            throw new Error("Failed to fetch cart");
+
+    function updatePagination() {
+
+    document.getElementById("page-info").textContent =
+        `Page ${currentPage} of ${totalPages}`;
+
+    document.getElementById("prev-btn").disabled =
+        currentPage === 1;
+
+    document.getElementById("next-btn").disabled =
+        currentPage === totalPages;
+
+}
+
+    async function fetchCart() {
+        try {
+            const token = localStorage.getItem("token");//tells the browser to take my token out
+            const response = await fetch("/api/cart", {
+                headers: {
+                    "Authorization": `Bearer ${token}`//name of http header exaclty what middle ware read
+                }//take the header out put it inside the req send it to the server the complete journey login server crreate jwt browser save jwt user click cart browser take jwt from locak storage browser attach jwt in auth header server recive request middleware read auth header middleware verifies jwt royte ec
+            });
+            if (!response.ok) {
+                throw new Error("Failed to fetch cart");
+            }
+            const data = await response.json();
+            cart = data;
+            renderCart();
+            updateCartCount();
+        } catch (error) {
+            console.error("Error fetching cart:", error);
         }
-        const data=await response.json();
-        cart=data;
-        renderCart();
-        updateCartCount();
-    } catch (error) {
-        console.error("Error fetching cart:", error);
     }
-   }
- // Display products
-function renderProducts(productsToRender) {
+    // Display products
+    function renderProducts(productsToRender) {
 
-    productlist.innerHTML = "";
+        productlist.innerHTML = "";
 
-    // If no products match the search
-    if (productsToRender.length === 0) {
+        // If no products match the search
+        if (productsToRender.length === 0) {
 
-        productlist.innerHTML = `
+            productlist.innerHTML = `
             <div class="col-span-full text-center py-20">
 
                 <h2 class="text-3xl font-bold">
@@ -113,18 +136,18 @@ function renderProducts(productsToRender) {
             </div>
         `;
 
-        return;
-    }
+            return;
+        }
 
-    // Display all products
-    productsToRender.forEach(product => {
+        // Display all products
+        productsToRender.forEach(product => {
 
-        const productdiv = document.createElement("div");
+            const productdiv = document.createElement("div");
 
-        productdiv.className =
-            "bg-white rounded-3xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition duration-300 p-6 flex flex-col";
+            productdiv.className =
+                "bg-white rounded-3xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition duration-300 p-6 flex flex-col";
 
-        productdiv.innerHTML = `
+            productdiv.innerHTML = `
 
             <div class="bg-[#f5f5f7] rounded-3xl h-80 flex items-center justify-center p-8">
 
@@ -182,33 +205,33 @@ function renderProducts(productsToRender) {
 
         `;
 
-         productdiv.addEventListener("click", (e) => {
- 
-  console.log("Card clicked");
-    console.log("Target:", e.target);
+            productdiv.addEventListener("click", (e) => {
 
-       if (e.target.closest("button")) {
-           console.log("Button detected");
-        return;
+                console.log("Card clicked");
+                console.log("Target:", e.target);
+
+                if (e.target.closest("button")) {
+                    console.log("Button detected");
+                    return;
+                }
+                console.log("Going to product page");
+                window.location.href = `product.html?id=${product._id}`;
+
+            });
+
+            productlist.appendChild(productdiv);
+
+        });
+
     }
-  console.log("Going to product page");
-    window.location.href = `product.html?id=${product._id}`;
-
-});
-
-        productlist.appendChild(productdiv);
-
-    });
-
-}
 
 
     // Event delegation for Add to Cart buttons
     productlist.addEventListener("click", (e) => {
-         console.log("Button clicked", e.target);
+        console.log("Button clicked", e.target);
         if (e.target.tagName === "BUTTON") {
-             e.stopPropagation();
-            const productId =e.target.dataset.id;
+            e.stopPropagation();
+            const productId = e.target.dataset.id;
             const product = products.find(p => p._id === productId);
 
             if (product) {
@@ -216,34 +239,34 @@ function renderProducts(productsToRender) {
             }
         }
     });
-    if(cartitems){
-    cartitems.addEventListener("click", (e) => {
-        const id=e.target.dataset.id;
-        if (e.target.classList.contains("remove")) {
-    removeFromCart(id);
-}
+    if (cartitems) {
+        cartitems.addEventListener("click", (e) => {
+            const id = e.target.dataset.id;
+            if (e.target.classList.contains("remove")) {
+                removeFromCart(id);
+            }
 
-if (e.target.classList.contains("increase")) {
-    updateQuantity(id, "increase");
-}
+            if (e.target.classList.contains("increase")) {
+                updateQuantity(id, "increase");
+            }
 
-if (e.target.classList.contains("decrease")) {
-    updateQuantity(id, "decrease");
-}
-    });
-}
+            if (e.target.classList.contains("decrease")) {
+                updateQuantity(id, "decrease");
+            }
+        });
+    }
 
     // Add product to cart
     async function addToCart(product) {
-        try{
-            const token=localStorage.getItem("token");
-            const response=await fetch("/api/cart",{
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json",
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("/api/cart", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body:JSON.stringify({ id: product._id })
+                body: JSON.stringify({ id: product._id })
             });
 
             if (!response.ok) {
@@ -260,28 +283,28 @@ if (e.target.classList.contains("decrease")) {
             console.error("Error adding product to cart:", error);
         }
     }
-    async function updateQuantity(id, action){
-        try{
-            const token=localStorage.getItem("token");
-            const response=await fetch(`/api/cart/${id}`,{
-                method:"PUT",
-                headers:{
-                    "Content-Type":"application/json",
+    async function updateQuantity(id, action) {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`/api/cart/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body:JSON.stringify({ action })
+                body: JSON.stringify({ action })
             });
-            const data=await response.json();
-            if(!response.ok){
+            const data = await response.json();
+            if (!response.ok) {
                 throw new Error(data.message);
             }
-              cart=data.cart;
-        renderCart();
-        updateCartCount();
+            cart = data.cart;
+            renderCart();
+            updateCartCount();
         } catch (error) {
             console.error("Error updating cart item:", error);
         }
-      
+
     }
     async function removeFromCart(productId) {
         const token = localStorage.getItem("token");
@@ -310,44 +333,44 @@ if (e.target.classList.contains("decrease")) {
 
     function updateCartCount() {
 
-    if (!cartCount) return;
+        if (!cartCount) return;
 
-    let totalItems = 0;
-
-    cart.forEach(item => {
-        totalItems += item.quantity;
-    });
-
-     if (totalItems === 0) {
-        cartCount.textContent = "";
-    } else {
-        cartCount.textContent = `(${totalItems})`;
-    }
-
-}
-    // Display cart
-   function renderCart() {
-
-    if (!cartitems) return;
-
-    cartitems.innerHTML = "";
-
-    let totalPrice = 0;
-
-    if (cart.length > 0) {
-
-        emptycarmessage.classList.add("hidden");
-        carttotalmessage.classList.remove("hidden");
+        let totalItems = 0;
 
         cart.forEach(item => {
+            totalItems += item.quantity;
+        });
 
-            totalPrice += item.price * item.quantity;
+        if (totalItems === 0) {
+            cartCount.textContent = "";
+        } else {
+            cartCount.textContent = `(${totalItems})`;
+        }
 
-            const cartitem = document.createElement("div");
+    }
+    // Display cart
+    function renderCart() {
 
-            cartitem.className = "text-white mb-2";
+        if (!cartitems) return;
 
-            cartitem.innerHTML = `
+        cartitems.innerHTML = "";
+
+        let totalPrice = 0;
+
+        if (cart.length > 0) {
+
+            emptycarmessage.classList.add("hidden");
+            carttotalmessage.classList.remove("hidden");
+
+            cart.forEach(item => {
+
+                totalPrice += item.price * item.quantity;
+
+                const cartitem = document.createElement("div");
+
+                cartitem.className = "text-white mb-2";
+
+                cartitem.innerHTML = `
                 <div class="glass rounded-xl p-4 flex justify-between items-center mb-4">
 
                     <div>
@@ -367,37 +390,62 @@ if (e.target.classList.contains("decrease")) {
                 </div>
             `;
 
-            cartitems.appendChild(cartitem);
+                cartitems.appendChild(cartitem);
 
-        });
+            });
 
-        totalpricedisplay.textContent = totalPrice.toFixed(2);
+            totalpricedisplay.textContent = totalPrice.toFixed(2);
 
-    } else {
+        } else {
 
-        emptycarmessage.classList.remove("hidden");
-        carttotalmessage.classList.add("hidden");
-        totalpricedisplay.textContent = "0.00";
+            emptycarmessage.classList.remove("hidden");
+            carttotalmessage.classList.add("hidden");
+            totalpricedisplay.textContent = "0.00";
 
+        }
     }
-}
 
     // Checkout
-    if(checkoutbtn){
-    checkoutbtn.addEventListener("click", () => {
-        cart.length = 0;
-        showToast("Checkout successful!");
-        renderCart();
-    });
+    if (checkoutbtn) {
+        checkoutbtn.addEventListener("click", () => {
+            cart.length = 0;
+            showToast("Checkout successful!");
+            renderCart();
+        });
     }
-   async function init() {
-    await fetchProducts();
+    async function init() {
+        await fetchProducts();
 
-    if (cartitems) {
-        await fetchCart();
+        if (cartitems) {
+            await fetchCart();
+        }
     }
-}
-   init();
+    init();
+
+document.getElementById("prev-btn").addEventListener("click", () => {
+
+    if (currentPage > 1) {
+
+        currentPage--;
+
+        fetchProducts();
+
+    }
+
+});
+
+document.getElementById("next-btn").addEventListener("click", () => {
+
+    if (currentPage < totalPages) {
+
+        currentPage++;
+
+        fetchProducts();
+
+    }
+
+});
+
 });
 // your backend is the clg
 //jwt is the identity card
