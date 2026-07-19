@@ -48,7 +48,7 @@ try{
     // Here you would typically compare the provided password with the hashed password stored in the database
     const isMatch=await bcrypt.compare(password,user.password);//why await bz searching monfodb takes
     if(!isMatch){
-        return res.status(400).json({
+        return res.status(401).json({
             message:"Invalid email or password"
         });
     }

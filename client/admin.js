@@ -123,7 +123,7 @@ formData.append(
 }
 async function fetchProducts() {
 
-    const response = await fetch("/api/products");
+    const response = await fetch("/api/products?limit=1000");
     const data = await response.json();
     productsList = data.products;
 

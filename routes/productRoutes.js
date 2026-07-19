@@ -1,3 +1,5 @@
+const User = require("../models/User");
+const bcrypt = require("bcrypt");
 const express = require("express");
 const upload = require("../middleware/upload");
 const router = express.Router();

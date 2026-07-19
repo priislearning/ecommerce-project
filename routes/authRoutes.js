@@ -15,8 +15,6 @@ const{
 
 const { registerValidation,loginValidation } = require("../validators/authValidator");
 const validate = require("../middleware/validate");
-console.log(registerValidation);
-console.log(validate);
 router.post(
     "/",
     authMiddleware,

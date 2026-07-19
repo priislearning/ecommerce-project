@@ -12,10 +12,7 @@
 //Controller focuses only on business logic.
 const{ validationResult }= require("express-validator");//any err from authvalidator stores insdie this
 const validate=(req,res,next)=>{//express middleware
-    console.log("===== VALIDATE MIDDLEWARE =====");
-    console.log("Body:", req.body);
     const errors=validationResult(req);
-    console.log(errors.array());
     if(!errors.isEmpty()){//for no error is empty is true
      return res.status(400).json({
         errors:errors.array()
