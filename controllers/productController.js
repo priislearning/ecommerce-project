@@ -1,4 +1,6 @@
+const streamifier = require("streamifier");
 const Product = require("../models/product");
+const cloudinary = require("../config/cloudinary");
 const { redisClient } = require("../db/redis");
 const clearProductCache = async () => {
 
@@ -21,8 +23,30 @@ const createProduct = async (req, res) => {
             price,
             stock,
             description,
-            image
         } = req.body;
+        if (!req.file) {
+    return res.status(400).json({
+        message: "Please upload an image",
+    });
+}
+        const result = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: "products",
+                },
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                }
+            );
+
+            streamifier
+                .createReadStream(req.file.buffer)
+                .pipe(uploadStream);
+        });
 
         const product = await Product.create({
             name,
@@ -31,7 +55,7 @@ const createProduct = async (req, res) => {
             price,
             stock,
             description,
-            image
+            image: result.secure_url
         });
 
         await clearProductCache();
@@ -40,44 +64,81 @@ const createProduct = async (req, res) => {
             message: "Product created successfully",
             product
         });
-
-    } catch (err) {
-
+  } catch (err) {
         res.status(500).json({
             message: err.message
         });
-
     }
 };
+
 const updateProduct = async (req, res) => {
     try {
 
+        // Data from the form
+        const updateData = {
+            name: req.body.name,
+            brand: req.body.brand,
+            category: req.body.category,
+            price: req.body.price,
+            stock: req.body.stock,
+            description: req.body.description,
+        };
+
+        // If a new image was selected, upload it
+        if (req.file) {
+
+            const result = await new Promise((resolve, reject) => {
+
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: "products",
+                    },
+                    (error, result) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(result);
+                        }
+                    }
+                );
+
+                streamifier
+                    .createReadStream(req.file.buffer)
+                    .pipe(uploadStream);
+
+            });
+
+            updateData.image = result.secure_url;
+
+        }
+
+        // Update product in MongoDB
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             {
                 new: true,
-                runValidators: true
+                runValidators: true,
             }
         );
 
         if (!product) {
             return res.status(404).json({
-                message: "Product not found"
+                message: "Product not found",
             });
         }
 
         await clearProductCache();
 
         res.json({
-            message: "Product updated",
-            product
+            message: "Product updated successfully",
+            product,
         });
 
     } catch (err) {
 
         res.status(500).json({
-            message: err.message
+            message: err.message,
         });
 
     }

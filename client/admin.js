@@ -1,3 +1,4 @@
+console.log("admin.js loaded");
 let editingProductId = null;
 let productsList = [];
 function editProduct(id) {
@@ -18,8 +19,6 @@ document.getElementById("stock").value = product.stock;
 
 document.getElementById("description").value = product.description;
 
-document.getElementById("image").value = product.image;
-
 document.getElementById("submitBtn").textContent =
         "Update Product";
 }
@@ -39,7 +38,7 @@ async function checkAdmin() {
                 Authorization: `Bearer ${token}`
             }
         });
-
+console.log("checkAdmin started");
         if (!response.ok) {
             throw new Error("Unauthorized");
         }
@@ -54,10 +53,8 @@ async function checkAdmin() {
           await fetchOrders();
 
     } catch (err) {
-
-        localStorage.removeItem("token");
-        window.location.href = "/login.html";
-
+    localStorage.removeItem("token");
+    window.location.href = "/login.html";
     }
 
 }
@@ -66,15 +63,19 @@ async function saveProduct(e) {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
-    const product = {
-        name: document.getElementById("name").value,
-        brand: document.getElementById("brand").value,
-        category: document.getElementById("category").value,
-        price: Number(document.getElementById("price").value),
-        stock: Number(document.getElementById("stock").value),
-        description: document.getElementById("description").value,
-        image: document.getElementById("image").value
-    };
+   const formData = new FormData();
+
+formData.append("name", document.getElementById("name").value);
+formData.append("brand", document.getElementById("brand").value);
+formData.append("category", document.getElementById("category").value);
+formData.append("price", document.getElementById("price").value);
+formData.append("stock", document.getElementById("stock").value);
+formData.append("description", document.getElementById("description").value);
+
+formData.append(
+    "image",
+    document.getElementById("image").files[0]
+);
   
      const url = editingProductId
         ? `/api/products/${editingProductId}`
@@ -90,10 +91,9 @@ async function saveProduct(e) {
         const response = await fetch(url, {
             method,
             headers: {
-                "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify(product)
+            body:formData
         });
 
         const data = await response.json();
@@ -124,10 +124,10 @@ async function saveProduct(e) {
 async function fetchProducts() {
 
     const response = await fetch("/api/products");
-    const products = await response.json();
-    productsList = products;
+    const data = await response.json();
+    productsList = data.products;
 
-    renderProducts(products);
+    renderProducts(data.products);
 
 }
 function renderProducts(products) {

@@ -45,9 +45,13 @@ document.addEventListener("DOMContentLoaded", async () => {//waits until html ha
                 }
                 localStorage.setItem("token",data.token);
                 alert("Login successful");
-                if (data.role === "admin") {
+                console.log("Login response:", data);
+
+if (data.role === "admin") {
+    console.log("Going to admin...");
     window.location.href = "/admin.html";
 } else {
+    console.log("Going to index...");
     window.location.href = "/index.html";
 }
             } catch (error) {

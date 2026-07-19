@@ -20,6 +20,7 @@
   "homepage": "https://github.com/priislearning/ecommerce-project#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cloudinary": "^2.10.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "envalid": "^8.2.0",
@@ -29,7 +30,9 @@
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.7.3",
+    "multer": "^2.2.0",
     "redis": "^6.1.0",
+    "streamifier": "^0.1.1",
     "xss-clean": "^0.1.4"
   }
 }
