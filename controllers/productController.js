@@ -1,6 +1,16 @@
 const Product = require("../models/product");
 const { redisClient } = require("../db/redis");
+const clearProductCache = async () => {
 
+    const keys = await redisClient.keys("products:*");
+
+    if (keys.length > 0) {
+
+        await redisClient.del(keys);
+
+    }
+
+};
 const createProduct = async (req, res) => {
     try {
 
@@ -24,7 +34,7 @@ const createProduct = async (req, res) => {
             image
         });
 
-        await redisClient.del("products");
+        await clearProductCache();
 
         res.status(201).json({
             message: "Product created successfully",
@@ -57,7 +67,7 @@ const updateProduct = async (req, res) => {
             });
         }
 
-        await redisClient.del("products");
+        await clearProductCache();
 
         res.json({
             message: "Product updated",
@@ -83,7 +93,7 @@ const deleteProduct = async (req, res) => {
             });
         }
 
-        await redisClient.del("products");
+        await clearProductCache();
 
         res.json({
             message: "Product deleted successfully"
@@ -101,34 +111,69 @@ const getProducts = async (req, res) => {
 
 
     const page = Number(req.query.page) || 1;//browser sent get/api/products there is no ?page so req.query.page is undefined then number(undefined) is nan and nan||1 is page 1
-
+    const brand = req.query.brand;
+   const sort = req.query.sort;
+    const search = req.query.search;
+  console.log("Search received by backend:", search);
     const limit = Number(req.query.limit) || 3;
+  
+   const filter = {};
+
+    if (search) {
+        filter.name = {
+            $regex: search,
+            $options: "i"
+        };
+    }
+
+    const sortOption = {};
+
+    if (brand) {
+    filter.brand = brand;
+}
+if (sort === "price_asc") {
+    sortOption.price = 1;
+}
+else if (sort === "price_desc") {
+    sortOption.price = -1;
+}
+else if (sort === "rating") {
+    sortOption.rating = -1;
+}
     const skip = (page - 1) * limit;
+    const cacheKey = `products:${page}:${limit}:${sort}:${search}`;
     try {
 
-      // const cachedProducts = await redisClient.get("products");
 
-       // if (cachedProducts) {
+        const cachedProducts = await redisClient.get(cacheKey);
 
-         //   console.log("Cache Hit");
+        if (cachedProducts) {
 
-          //  return res.json(JSON.parse(cachedProducts));
+            console.log("Cache Hit");
 
-      //  }
+            return res.json(JSON.parse(cachedProducts));
+
+        }
 
         console.log("Cache Miss");
 
-        const totalProducts = await Product.countDocuments();
+        const totalProducts = await Product.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / limit);
-        const products = await Product.find()
-            .skip(skip)
+        const products = await Product.find(filter).sort(sortOption)
+              .sort(sortOption)
+        .skip(skip)
             .limit(limit);
 
 
-       // await redisClient.set(
-        //    "products",
-        //    JSON.stringify(products)
-        //);
+        await redisClient.set(
+            "products",
+            JSON.stringify({
+                products,
+                currentPage: page,
+                totalPages,
+                totalProducts
+            })
+        );
 
         res.json({
             products,
@@ -142,8 +187,8 @@ const getProducts = async (req, res) => {
 
     } catch (error) {
 
-       res.status(500).json({
-           message: "Server error"
+        res.status(500).json({
+            message: "Server error"
         });
 
     }

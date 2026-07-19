@@ -15,57 +15,46 @@ document.addEventListener("DOMContentLoaded", () => {
      let currentPage = 1;
     let totalPages = 1;
     const limit = 3;
+    let selectedSort = "";
+let searchQuery = "";
+   searchInput.addEventListener("input", () => {
 
-    searchInput.addEventListener("input", () => {
-        const searchText = searchInput.value.toLowerCase();
+    searchQuery = searchInput.value.trim();
+    console.log("Search Query:", searchQuery);   
+    currentPage = 1;
 
-        const filteredProducts = products.filter(product => {
+    fetchProducts();
 
-            return product.name.toLowerCase().includes(searchText);
-
-        });
-
-        renderProducts(filteredProducts);
-
-
-    });
+});
     sortSelect.addEventListener("change", () => {
 
-        if (sortSelect.value === "default") {
-            renderProducts(products);
-            return;
-        }
+    if (sortSelect.value === "low-high") {
+        selectedSort = "price_asc";
+    }
 
-        const sortedProducts = [...products];//to make change to a new copy of duplicate array
+    else if (sortSelect.value === "high-low") {
+        selectedSort = "price_desc";
+    }
 
-        if (sortSelect.value === "low-high") {
+    else if (sortSelect.value === "rating") {
+        selectedSort = "rating";
+    }
 
-            sortedProducts.sort((a, b) => a.price - b.price);
+    else {
+        selectedSort = "";
+    }
 
-        }
+    currentPage = 1;
+    fetchProducts();
 
-        else if (sortSelect.value === "high-low") {
-
-            sortedProducts.sort((a, b) => b.price - a.price);
-
-        }
-
-        else if (sortSelect.value === "rating") {
-
-            sortedProducts.sort((a, b) => b.rating - a.rating);
-
-        }
-
-        renderProducts(sortedProducts);
-
-    });
+});
 
    
 
     // Fetch products from backend
     async function fetchProducts() {
         try {
-            const response = await fetch(`/api/products?page=${currentPage}&limit=${limit}`);
+            const response = await fetch(`/api/products?page=${currentPage}&limit=${limit}&sort=${selectedSort}&search=${searchQuery}`);
 
             if (!response.ok) {
                 throw new Error("Failed to fetch products");
@@ -74,7 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             currentPage = data.currentPage;
             totalPages = data.totalPages;
-
+            products=data.products;
+            console.log("Products length:", products.length);
+console.log(products);
             renderProducts(data.products);
               updatePagination();
         } catch (error) {
